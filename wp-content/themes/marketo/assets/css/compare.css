@@ -1,0 +1,131 @@
+body > h1 {
+    text-align: center;
+    font-size: 36px;
+    text-transform: capitalize;
+    padding: 20px 0;
+    line-height: 31px;
+    background-color: #333333;
+    font-family: Rubik, sans-serif;
+}
+
+table.compare-list th {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: Rubik, sans-serif;
+}
+
+table.dataTable td {
+    padding: 30px;
+}
+
+table.compare-list tr td {
+    font-size: 15px;
+}
+
+table.compare-list td p {
+    font-size: 15px;
+    font-weight: 500;
+    font-family: Rubik, sans-serif;
+    color: #000;
+    line-height: 24px;
+}
+
+table.compare-list td.odd {
+    background: #F7F9Fb;
+}
+
+table.compare-list .stock td span {
+    color: #009900;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: Rubik, sans-serif;
+    line-height: 24px;
+}
+table.compare-list .remove td a {
+    font-size: 14px;
+    color: #f55145;
+    font-family: Rubik, sans-serif;
+    display: inline-block;
+    transition: all .4s ease;
+    padding-left: 20px;
+    position: relative;
+}
+table.compare-list .title  td {
+    color: #000;
+    font-size: 16px !important;
+    text-transform: uppercase;
+    font-family: Rubik, sans-serif;
+    font-weight: 500;
+}
+table.compare-list .price span {
+    font-size: 18px;
+    color: #000;
+    font-family: Rubik, sans-serif;
+    font-weight: 500;
+}
+table.compare-list .price del span {
+    color: #9d9fa0;
+}
+table.compare-list .price del {
+    color: #9d9fa0;
+}
+table.compare-list td ,
+table.compare-list th {
+    border-right: 1px solid #e7e7e7;
+}
+table.compare-list th, table.compare-list td {
+    border-color: #e7e7e7;
+}
+table.compare-list td img {
+    border: 0;
+    padding: 0;
+    margin-bottom: 0;
+}
+table.compare-list tr.title td {
+    padding-bottom: 10px;
+}
+table.compare-list tr.price td del {
+    padding-right: 15px;
+}
+table.compare-list tr.remove td ,
+table.compare-list tr.remove th {
+    border-bottom: 1px solid #e7e7e7;
+    padding: 20px;
+    background-color: #ffffff;
+}
+table.compare-list .add-to-cart td a {
+    border-radius: 4px;
+    background-color: #0063d1;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 12px 42px;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+table.compare-list .remove td a .remove {
+    display: none;  
+}
+table.compare-list tr.remove a:after, table.compare-list tr.remove a:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    margin-top: -1px;
+    width: 15px;
+    height: 2px;
+    display: inline-block;
+    background-color: #f55145;
+    transition: all .2s ease-in;
+}
+table.compare-list tr.remove a:before {
+    transform: rotate(0);
+}
+table.compare-list tr.remove a:after {
+    transform: rotate(0);
+}
+table.compare-list tr.remove a:hover:before {
+    transform: rotate(45deg);
+}
+table.compare-list tr.remove a:hover:after {
+    transform: rotate(-45deg);
+}
