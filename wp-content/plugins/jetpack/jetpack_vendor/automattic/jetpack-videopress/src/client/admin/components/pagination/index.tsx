@@ -7,6 +7,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import useVideos, { useLocalVideos } from '../../hooks/use-videos';
 import styles from './style.module.scss';
 import { PaginationProps } from './types';
 import type React from 'react';
@@ -16,7 +17,13 @@ const range = ( start, count ) => {
 };
 
 const Ellipsis = () => (
-	<Button size="small" className={ classnames( styles.button ) } variant="tertiary" disabled>
+	<Button
+		size="small"
+		className={ classnames( styles.button ) }
+		variant="tertiary"
+		disabled
+		aria-disabled
+	>
 		<Text>...</Text>
 	</Button>
 );
@@ -59,6 +66,7 @@ const Pagination: React.FC< PaginationProps > = ( {
 				className={ classnames( styles.button, isCurrent ? styles.selected : null ) }
 				variant={ isCurrent ? 'primary' : 'tertiary' }
 				disabled={ disabled }
+				aria-disabled={ disabled }
 				onClick={ () => onChangePage( page ) }
 			>
 				{ page }
@@ -121,6 +129,7 @@ const Pagination: React.FC< PaginationProps > = ( {
 				className={ classnames( styles.navigation, styles.button ) }
 				variant="tertiary"
 				disabled={ disabled || currentPage === 1 }
+				aria-disabled={ disabled || currentPage === 1 }
 				onClick={ () => onChangePage( Math.max( 1, currentPage - 1 ) ) }
 			>
 				<Icon icon={ chevronLeft } />
@@ -131,11 +140,45 @@ const Pagination: React.FC< PaginationProps > = ( {
 				className={ classnames( styles.navigation, styles.button ) }
 				variant="tertiary"
 				disabled={ disabled || currentPage === numPages }
+				aria-disabled={ disabled || currentPage === numPages }
 				onClick={ () => onChangePage( Math.min( numPages, currentPage + 1 ) ) }
 			>
 				<Icon icon={ chevronRight } />
 			</Button>
 		</div>
+	);
+};
+
+export const ConnectPagination = ( props: { className: string; disabled?: boolean } ) => {
+	const { setPage, page, itemsPerPage, total, isFetching } = useVideos();
+	return total <= itemsPerPage ? (
+		<div className={ classnames( props.className, styles[ 'pagination-placeholder' ] ) } />
+	) : (
+		<Pagination
+			{ ...props }
+			perPage={ itemsPerPage }
+			onChangePage={ setPage }
+			currentPage={ page }
+			total={ total }
+			disabled={ isFetching || props.disabled }
+		/>
+	);
+};
+
+export const ConnectLocalPagination = ( props: { className?: string; disabled?: boolean } ) => {
+	const { setPage, page, itemsPerPage, total, isFetching } = useLocalVideos();
+
+	return total < itemsPerPage ? (
+		<div className={ classnames( props.className, styles[ 'pagination-placeholder' ] ) } />
+	) : (
+		<Pagination
+			{ ...props }
+			perPage={ itemsPerPage }
+			onChangePage={ setPage }
+			currentPage={ page }
+			total={ total }
+			disabled={ isFetching || props.disabled }
+		/>
 	);
 };
 

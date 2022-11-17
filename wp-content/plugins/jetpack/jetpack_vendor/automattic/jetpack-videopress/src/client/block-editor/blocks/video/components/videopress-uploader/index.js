@@ -1,21 +1,22 @@
 /**
  * External dependencies
  */
+import { getRedirectUrl } from '@automattic/jetpack-components';
 import apiFetch from '@wordpress/api-fetch';
 import { BlockIcon, MediaPlaceholder } from '@wordpress/block-editor';
-import { withNotices } from '@wordpress/components';
-import { useCallback, useState } from '@wordpress/element';
+import { Spinner, withNotices, Button, ExternalLink } from '@wordpress/components';
+import { useCallback, useState, createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { useResumableUploader } from '../../hooks/use-uploader.js';
+import { uploadFromLibrary, useResumableUploader } from '../../../../../hooks/use-uploader';
+import { PlaceholderWrapper } from '../../edit.js';
 import { description, title } from '../../index.js';
 import { VideoPressIcon } from '../icons';
 import UploadError from './uploader-error.js';
 import UploadProgress from './uploader-progress.js';
-
 import './style.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
@@ -30,6 +31,7 @@ const VideoPressUploader = ( {
 	const [ uploadPaused, setUploadPaused ] = useState( false );
 	const [ uploadCompleted, setUploadCompleted ] = useState( false );
 	const [ isUploadingInProgress, setIsUploadingInProgress ] = useState( false );
+	const [ isVerifyingLocalMedia, setIsVerifyingLocalMedia ] = useState( false );
 	const tusUploader = useRef( null );
 
 	/*
@@ -79,14 +81,17 @@ const VideoPressUploader = ( {
 	};
 
 	// Helper instance to upload the video to the VideoPress infrastructure.
-	const [ videoPressUploader ] = useResumableUploader( {
+	// eslint-disable-next-line no-unused-vars
+	const [ videoPressUploader, jwtData, jwtError ] = useResumableUploader( {
 		onError: setUploadErrorData,
 		onProgress: setUploadingProgress,
 		onSuccess: handleUploadSuccess,
 	} );
 
-	// Returns true if the object represents a valid host for a VideoPress video.
-	// Private vidoes are hosted under video.wordpress.com
+	/*
+	 * Returns true if the object represents a valid host for a VideoPress video.
+	 * Private vidoes are hosted under video.wordpress.com
+	 */
 	const isValidVideoPressUrl = urlObject => {
 		const validHosts = [ 'videopress.com', 'video.wordpress.com' ];
 		return urlObject.protocol === 'https:' && validHosts.includes( urlObject.host );
@@ -145,32 +150,12 @@ const VideoPressUploader = ( {
 	};
 
 	const startUploadFromLibrary = attachmentId => {
-		const path = `videopress/v1/upload/${ attachmentId }`;
-		apiFetch( { path, method: 'POST' } )
+		uploadFromLibrary( attachmentId )
 			.then( result => {
-				if ( 'uploading' === result.status ) {
-					startUploadFromLibrary( attachmentId );
-				} else if ( 'complete' === result.status ) {
-					handleUploadSuccess( {
-						guid: result.uploaded_details.guid,
-						id: result.uploaded_details.media_id,
-						src: result.uploaded_details.src,
-					} );
-				} else if ( 'error' === result.status ) {
-					setUploadErrorDataState( {
-						data: { message: result.error },
-					} );
-				} else {
-					setUploadErrorDataState( {
-						// Should never happen.
-						data: { message: __( 'Unexpected error uploading video.', 'jetpack-videopress-pkg' ) },
-					} );
-				}
+				handleUploadSuccess( result );
 			} )
 			.catch( error => {
-				setUploadErrorDataState( {
-					data: { message: error.message },
-				} );
+				setUploadErrorDataState( error );
 			} );
 	};
 
@@ -191,12 +176,16 @@ const VideoPressUploader = ( {
 	 * @returns {void}
 	 */
 	function onSelectVideo( media ) {
-		const isFileUploading = null !== media && media instanceof FileList;
+		/*
+		 * Allow uploading only (the first) one file
+		 * @todo: Allow uploading multiple files
+		 */
+		media = media?.[ 0 ] ? media[ 0 ] : media;
 
+		const isFileUploading = media instanceof File;
 		// Handle upload by selecting a File
 		if ( isFileUploading ) {
-			const file = media[ 0 ];
-			startUpload( file );
+			startUpload( media );
 			return;
 		}
 
@@ -212,8 +201,12 @@ const VideoPressUploader = ( {
 		if ( media.id ) {
 			const path = `videopress/v1/upload/${ media.id }`;
 
+			setIsVerifyingLocalMedia( true );
+
 			apiFetch( { path, method: 'GET' } )
 				.then( result => {
+					setIsVerifyingLocalMedia( false );
+
 					if ( 'new' === result.status || 'resume' === result.status ) {
 						setFile( media );
 						// We set it to 100% since the first step (uploading from computer) is already made.
@@ -234,6 +227,7 @@ const VideoPressUploader = ( {
 					}
 				} )
 				.catch( error => {
+					setIsVerifyingLocalMedia( false );
 					setUploadErrorDataState( {
 						data: { message: error.message },
 					} );
@@ -250,6 +244,31 @@ const VideoPressUploader = ( {
 				),
 			},
 		} );
+	}
+
+	if ( jwtError?.code === 'owner_not_connected' ) {
+		const connectUserDescription = createInterpolateElement(
+			__(
+				'<connectLink>Connect</connectLink> your site to use the <moreAboutVideoPressLink>VideoPress</moreAboutVideoPressLink> video block.',
+				'jetpack-videopress-pkg'
+			),
+			{
+				connectLink: <a href={ jwtError?.data?.connect_url } rel="noreferrer noopener" />,
+				moreAboutVideoPressLink: <ExternalLink href={ getRedirectUrl( 'jetpack-videopress' ) } />,
+			}
+		);
+
+		return (
+			<PlaceholderWrapper errorMessage={ connectUserDescription }>
+				<Button
+					key="videopress-connect-user"
+					variant="primary"
+					href={ jwtError?.data?.connect_url }
+				>
+					{ __( 'Connect', 'jetpack-videopress-pkg' ) }
+				</Button>
+			</PlaceholderWrapper>
+		);
 	}
 
 	// Showing error if upload fails
@@ -283,6 +302,17 @@ const VideoPressUploader = ( {
 				onDone={ handleDoneUpload }
 				supportPauseOrResume={ Boolean( tusUploader?.current ) }
 			/>
+		);
+	}
+
+	if ( isVerifyingLocalMedia ) {
+		return (
+			<PlaceholderWrapper disableInstructions>
+				<div className="loading-wrapper">
+					<Spinner />
+					<span>{ __( 'Loading…', 'jetpack-videopress-pkg' ) }</span>
+				</div>
+			</PlaceholderWrapper>
 		);
 	}
 

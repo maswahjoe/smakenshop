@@ -10,6 +10,7 @@
 namespace Automattic\Jetpack\Publicize;
 
 use Automattic\Jetpack\Connection\Client;
+use Automattic\Jetpack\Current_Plan;
 use Automattic\Jetpack\Redirect;
 use Automattic\Jetpack\Status;
 
@@ -861,7 +862,6 @@ abstract class Publicize_Base {
 					'service_label'   => $this->get_service_label( $service_name ),
 					'display_name'    => $this->get_display_name( $service_name, $connection ),
 					'profile_picture' => $this->get_profile_picture( $connection ),
-
 					'enabled'         => $enabled,
 					'done'            => $done,
 					'toggleable'      => $toggleable,
@@ -1446,22 +1446,37 @@ abstract class Publicize_Base {
 	/**
 	 * Call the WPCOM REST API to get the Publicize shares info.
 	 *
-	 * @param string $blog_id The blog_id.
+	 * @param string $blog_id The WPCOM blog_id for the current blog.
 	 * @return array
 	 */
 	public function get_publicize_shares_info( $blog_id ) {
-		$response        = Client::wpcom_json_api_request_as_blog(
-			sprintf( 'sites/%d/jetpack-social', absint( $blog_id ) ),
-			'2',
-			array(
-				'headers' => array( 'content-type' => 'application/json' ),
-				'method'  => 'GET',
-			),
-			null,
-			'wpcom'
-		);
-		$rest_controller = new REST_Controller();
-		return $rest_controller->make_proper_response( $response );
+		static $share_info_response = null;
+		$key                        = 'jetpack_social_shares_info';
+
+		if ( ! isset( $share_info_response ) ) {
+			$response            = Client::wpcom_json_api_request_as_blog(
+				sprintf( 'sites/%d/jetpack-social', absint( $blog_id ) ),
+				'2',
+				array(
+					'headers' => array( 'content-type' => 'application/json' ),
+					'method'  => 'GET',
+				),
+				null,
+				'wpcom'
+			);
+			$rest_controller     = new REST_Controller();
+			$share_info_response = $rest_controller->make_proper_response( $response );
+			if ( ! is_wp_error( $share_info_response ) ) {
+				set_transient( $key, $share_info_response, DAY_IN_SECONDS );
+				return $share_info_response;
+			}
+			$cached_response = get_transient( $key );
+			if ( ! empty( $cached_response ) ) {
+				return $cached_response;
+			}
+		}
+
+		return ! is_wp_error( $share_info_response ) ? $share_info_response : null;
 	}
 
 	/**
@@ -1482,6 +1497,21 @@ abstract class Publicize_Base {
 		);
 		$rest_controller = new REST_Controller();
 		return $rest_controller->make_proper_response( $response );
+	}
+
+	/**
+	 * Check if we have a paid Jetpack Social plan.
+	 *
+	 * @param bool $refresh_from_wpcom Whether to force refresh the plan check.
+	 *
+	 * @return bool True if we have a paid plan, false otherwise.
+	 */
+	public function has_paid_plan( $refresh_from_wpcom = false ) {
+		static $has_paid_plan = null;
+		if ( ! $has_paid_plan ) {
+			$has_paid_plan = Current_Plan::supports( 'social-shares-1000', $refresh_from_wpcom );
+		}
+		return $has_paid_plan;
 	}
 }
 

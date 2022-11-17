@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the YITH WooCommerce Compare package.
 msgid ""
 msgstr ""
-"Project-Id-Version: YITH WooCommerce Compare 2.18.0\n"
+"Project-Id-Version: YITH WooCommerce Compare 2.20.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/yith_woocommerce_compare\n"
-"POT-Creation-Date: 2022-08-31 09:53:42+00:00\n"
+"POT-Creation-Date: 2022-10-27 14:17:01+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"

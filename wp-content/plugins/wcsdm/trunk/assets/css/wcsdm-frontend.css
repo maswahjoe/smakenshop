@@ -1,0 +1,9 @@
+h1 {
+  color: white;
+  background-color: black; }
+
+.test {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none; }

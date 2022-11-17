@@ -1,0 +1,92 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+ .select-location {
+  cursor: pointer;
+  margin: 0;
+  font-size: 18px;
+}
+
+.map-order-review {
+  height: 500px;
+}
+
+#mapSearchForm .ui-menu {
+  top: 128.406px;
+  left: 20px;
+  width: 678px;
+}
+
+#mapSearchForm .ui-menu-item{
+  border: 1px solid black;
+  font-size: 11px;
+}
+
+#position {
+  display: none;
+}
+
+/* The Modal (background) */
+#myModal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 999999; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+#myModal .modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%; /* Could be more or less, depending on screen size */
+}
+
+#myModal .modal-content{
+  width: 50%;
+}
+
+@media only screen and (max-width: 768px) {
+  #myModal .modal-content {
+    width: 100%;
+  }
+  #myModal .ui-menu {
+    top: 107.75px;
+    left: 20px;
+    width: 89%;
+  }
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+input.ui-autocomplete-loading {
+  background: white url("../images/ui-anim_basic_16x16.gif") 98% 50% no-repeat;
+}
+
+input.valid {
+  background: white url("../images/check.png") 98% 50% no-repeat;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.bg-white {
+  background-color: #fff!important;
+}
